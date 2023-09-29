@@ -1,0 +1,31 @@
+print("Инициализируйте два вектора двумя разными способами. Тип элементов первого вектора — строка, второго — целое число. Второй вектор должен состоять минимум из 5 элементов. Выведите результат на экран.")
+v1 <- c("1432", "TRUE", "other string")
+print(v1)
+vector2 <- 0:5
+print(vector2)
+print(length(vector2))
+vector2[1]
+vector2[2:5]
+vector2[2:4]
+vector_new_1 = 0:5
+vector_new_2 = 6:10
+vector_new_1 + vector_new_2
+print(vector_new_1 + vector_new_2)
+mean(vector_new_2)
+test_func = function(x){}
+test_func = function(x){return x * 2}
+test_func = function(x){return (x * 2)}
+test_func(4)
+m = matrix(c(10, 9, 8, 7, 5, 6, 4, 3, 2), nrow = 3, ncol = 3)
+m[, 1]
+m[2 ,]
+m[(ncol(m) + 1) / 2, (nrow(m) + 1) / 2]
+setwd(""C:\Users\W1zzA\Downloads\ДЗ2_vgsales.csv"")
+setwd("C:\Users\W1zzA\Downloads\ДЗ2_vgsales.csv")
+setwd("C:/Users/W1zzA/Downloads/ДЗ2_vgsales.csv")
+df = read.csv("ДЗ2_vgsales.csv")
+getwd()
+setwd("C:/Users/W1zzA/Downloads/")
+df = read.csv("ДЗ2_vgsales.csv")
+head(df)
+summary(df)
