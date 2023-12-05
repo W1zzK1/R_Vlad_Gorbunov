@@ -1,0 +1,124 @@
+setwd("C:/Users/user/PycharmProjects/untitled1/data")
+
+# list.files()
+
+hh_demographic <- read.csv(file = "hh_demographic.csv")
+transaction_data <- read.csv(file = "transaction_data.csv")
+product <- read.csv(file = "product.csv")
+
+transaction_data$time <- strptime(transaction_data$TRANS_TIME, format="%H%M")
+
+# Загрузка библиотеки
+library(ggplot2)
+
+# Извлечение часов из столбца 'time'
+transaction_data$hour <- as.integer(format(transaction_data$time, "%H"))
+
+# Подсчет числа транзакций в каждый час
+activity_by_hour <- table(transaction_data$hour)
+
+# Преобразование таблицы в data.frame
+df <- as.data.frame(activity_by_hour)
+
+# Построение столбчатой диаграммы
+ggplot(df, aes(x=Var1, y=Freq)) +
+  geom_bar(stat="identity", fill="steelblue") +
+  labs(x="Hour", y="Number of Transactions", title="Activity by Hour")
+
+
+head(product)
+head(transaction_data)
+
+merged_data <- merge(transaction_data, product, by="PRODUCT_ID")
+head(merged_data)
+merged_data <- na.omit(merged_data)
+
+#поиск самых популярных товаров
+df_sum <- aggregate(merged_data$QUANTITY, by=list(Category=merged_data$COMMODITY_DISK), FUN=sum)
+
+# Отсортируйте данные по количеству в порядке убывания
+df_sum <- df_sum[order(-df_sum$x), ]
+print(length(merged_data$QUANTITY) == length(merged_data$COMMODITY_DISK))
+
+# Создайте гистограмму
+ggplot(df_sum, aes(x=reorder(Category, -x), y=x)) +
+  geom_bar(stat="identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(x="Название продукта", y="Количество", title="Самые популярные товары")
+
+
+# Установите и подключите библиотеку dplyr
+install.packages("dplyr")
+library(dplyr)
+
+# Определите "ходовые товары"
+popular_products <- merged_data %>%
+  group_by(COMMODITY_DESC) %>%
+  summarise(Total_Sales = sum(QUANTITY)) %>%
+  arrange(desc(Total_Sales)) %>%
+  head(10)  # Здесь мы выбираем 10 самых популярных товаров
+
+# Найдите магазины с высоким оборотом
+high_turnover_stores <- merged_data %>%
+  group_by(STORE_ID) %>%
+  summarise(Total_Sales = sum(QUANTITY)) %>%
+  arrange(desc(Total_Sales)) %>%
+  head(10)  # Здесь мы выбираем 10 магазинов с наибольшим оборотом
+
+# Проверьте продажи ходовых товаров в каждом магазине
+store_product_sales <- merged_data %>%
+  group_by(STORE_ID, COMMODITY_DESC) %>%
+  summarise(Total_Sales = sum(QUANTITY))
+
+library(ggplot2)
+# Отберите магазины с самыми большими продажами
+top_stores <- store_product_sales %>%
+  group_by(STORE_ID) %>%
+  summarise(Total_Sales = sum(Total_Sales)) %>%
+  arrange(desc(Total_Sales)) %>%
+  head(10)  # Здесь мы выбираем 10 магазинов с наибольшим оборотом
+
+# Отберите данные только для этих магазинов
+top_store_sales <- store_product_sales %>%
+  filter(STORE_ID %in% top_stores$STORE_ID)
+
+
+# Отберите самые популярные продукты
+top_products <- store_product_sales %>%
+  group_by(COMMODITY_DESC) %>%
+  summarise(Total_Sales = sum(Total_Sales)) %>%
+  arrange(desc(Total_Sales)) %>%
+  head(10)  # Здесь мы выбираем 10 самых популярных продуктов
+
+# Отберите данные только для этих продуктов
+top_product_sales <- store_product_sales %>%
+  filter(COMMODITY_DESC %in% top_products$COMMODITY_DESC)
+
+# Постройте гистограмму
+ggplot(top_product_sales, aes(x=COMMODITY_DESC, y=Total_Sales, fill=STORE_ID)) +
+  geom_bar(stat="identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(x="Товар", y="Общие продажи", fill="ID магазина", title="Продажи самых популярных товаров по магазинам")
+
+
+# Удалите продукт "COUPON/MISC ITEMS" из фрейма данных
+store_product_sales1 <- store_product_sales %>%
+  filter(COMMODITY_DESC != "COUPON/MISC ITEMS" & COMMODITY_DESC != "FUEL")
+
+# Отберите самые популярные продукты
+top_products <- store_product_sales1 %>%
+  group_by(COMMODITY_DESC) %>%
+  summarise(Total_Sales = sum(Total_Sales)) %>%
+  arrange(desc(Total_Sales)) %>%
+  head(10)  # Здесь мы выбираем 10 самых популярных продуктов
+
+# Отберите данные только для этих продуктов
+top_product_sales <- store_product_sales1 %>%
+  filter(COMMODITY_DESC %in% top_products$COMMODITY_DESC)
+
+# Постройте гистограмму
+ggplot(top_product_sales, aes(x=COMMODITY_DESC, y=Total_Sales, fill=STORE_ID)) +
+  geom_bar(stat="identity", position="dodge") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(x="Товар", y="Общие продажи", fill="ID магазина", title="Продажи самых популярных товаров по магазинам")
+
